@@ -151,7 +151,9 @@ namespace DokumentyJRWA.ViewModels
 
         private void ExecuteExportImportArchitecture(object? obj)
         {
-            System.Windows.MessageBox.Show("Export/Import Architektury JWRA - Functionality not implemented yet.");
+             var settingsWindow = new Views.SettingsWindow();
+    settingsWindow.Owner = System.Windows.Application.Current.MainWindow;
+    settingsWindow.ShowDialog();
         }
 
         // INotifyPropertyChanged implementation

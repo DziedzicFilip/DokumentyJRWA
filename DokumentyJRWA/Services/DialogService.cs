@@ -2,13 +2,15 @@ using Microsoft.Win32;
 using System.Windows;
 using DokumentyJRWA.Views;
 using DokumentyJRWA.ViewModels;
+
 namespace DokumentyJRWA.Services
 {
     public class DialogService : IDialogService
     {
         public string? OpenFileDialog()
         {
-            var dlg = new OpenFileDialog();
+            // Użyj pełnej nazwy dla WPF
+            var dlg = new Microsoft.Win32.OpenFileDialog();
             return dlg.ShowDialog() == true ? dlg.FileName : null;
         }
 
