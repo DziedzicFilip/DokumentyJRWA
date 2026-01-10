@@ -61,7 +61,7 @@ namespace DokumentyJRWA.ViewModels
         public ICommand ExportImportArchitectureCommand { get; }
         public ICommand EditCommand { get; }
         public ICommand DeleteCommand { get; }
-
+        public ICommand OpenLocationCommand { get; }
         public MainViewModel()
         {
             // Załaduj dokumenty z bazy
@@ -77,6 +77,7 @@ namespace DokumentyJRWA.ViewModels
             ExportImportArchitectureCommand = new RelayCommand(ExecuteExportImportArchitecture);
             EditCommand = new RelayCommand(ExecuteEdit);
             DeleteCommand = new RelayCommand(ExecuteDelete);
+            OpenLocationCommand = new RelayCommand(ExecuteOpenLocation);  
         }
 
         // Metoda filtrująca dokumenty
@@ -186,5 +187,38 @@ namespace DokumentyJRWA.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+        private void ExecuteOpenLocation(object? obj)
+{
+    if (obj is Dokument dokument)
+    {
+        try
+        {
+            // Sprawdź czy plik istnieje
+            if (string.IsNullOrEmpty(dokument.FilePath) || !System.IO.File.Exists(dokument.FilePath))
+            {
+                System.Windows.MessageBox.Show(
+                    $"Plik nie istnieje:\n{dokument.FilePath}",
+                    "Błąd",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            // Otwórz folder i zaznacz plik
+            string argument = $"/select, \"{dokument.FilePath}\"";
+            System.Diagnostics.Process.Start("explorer.exe", argument);
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show(
+                $"Błąd otwierania lokalizacji:\n{ex.Message}",
+                "Błąd",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error
+            );
+        }
+    }
+}
     }
 }

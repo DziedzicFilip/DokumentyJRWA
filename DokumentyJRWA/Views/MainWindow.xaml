@@ -105,25 +105,53 @@
                       CanUserAddRows="False"
                       Margin="0,0,0,10">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Tytuł" Binding="{Binding Tytul}" />
-                    <DataGridTextColumn Header="Data wpływu" Binding="{Binding DataWplywu}" />
-                    <DataGridTextColumn Header="JRWA" Binding="{Binding JrwaCode}" />
-                    <DataGridTextColumn Header="Podmioty" Binding="{Binding Podmioty}" />
-                    <DataGridTemplateColumn Header="Akcje">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Button Content="Edycja" Margin="0,0,5,0" 
-                                            Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"/>
-                                    <Button Content="Usuń" 
-                                            Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
+    <DataGridTextColumn Header="Tytuł" Binding="{Binding Tytul}" Width="*"/>
+    <DataGridTextColumn Header="Data wpływu" Binding="{Binding DataWplywu}" Width="Auto"/>
+    <DataGridTextColumn Header="JRWA" Binding="{Binding JrwaCode}" Width="Auto"/>
+    <DataGridTextColumn Header="Podmioty" Binding="{Binding Podmioty}" Width="Auto"/>
+    
+    <!-- Kolumna 1: Otwórz lokalizację -->
+    <DataGridTemplateColumn Header="📁" Width="60">
+        <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <Button Content="📂" 
+                        ToolTip="Otwórz lokalizację pliku"
+                        Command="{Binding DataContext.OpenLocationCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                        CommandParameter="{Binding}"
+                        Width="40"
+                        HorizontalAlignment="Center"/>
+            </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+    
+    <!-- Kolumna 2: Edycja -->
+    <DataGridTemplateColumn Header="✏️" Width="60">
+        <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <Button Content="✏️" 
+                        ToolTip="Edytuj dokument"
+                        Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                        CommandParameter="{Binding}"
+                        Width="40"
+                        HorizontalAlignment="Center"/>
+            </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+    
+    <!-- Kolumna 3: Usuń -->
+    <DataGridTemplateColumn Header="🗑️" Width="60">
+        <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <Button Content="🗑️" 
+                        ToolTip="Usuń dokument"
+                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                        CommandParameter="{Binding}"
+                        Width="40"
+                        HorizontalAlignment="Center"/>
+            </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+</DataGrid.Columns>
             </DataGrid>
         </Grid>
     </Grid>
