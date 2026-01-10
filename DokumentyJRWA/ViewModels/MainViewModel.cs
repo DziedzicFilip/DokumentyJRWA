@@ -100,23 +100,46 @@ namespace DokumentyJRWA.ViewModels
             }
         }
 
-        private void ExecuteAddFile(object? obj)
+       private void ExecuteAddFile(object? obj)
+{
+    var addVm = new AddDocumentViewModel(_dialogService);
+    if (_dialogService.ShowAddDocumentDialog(addVm))
+    {
+        try
         {
-            var addVm = new AddDocumentViewModel(_dialogService);
-            if (_dialogService.ShowAddDocumentDialog(addVm))
-            {
-                var dokument = addVm.ToDokument();
-                
-                // Dodaj do bazy
-                _documentService.Add(dokument);
-                
-                // Dodaj do kolekcji (UI się automatycznie odświeży)
-                Dokumenty.Add(dokument);
-                
-                // Odśwież przefiltrowaną listę
-                UpdateFilteredDokumenty();
-            }
+            // 1. Skopiuj plik do folderu JRWA
+            string copiedFilePath = addVm.CopyFileToJrwaFolder();
+            
+            // 2. Stwórz dokument z nową ścieżką
+            var dokument = addVm.ToDokument();
+            dokument.FilePath = copiedFilePath; // Użyj nowej ścieżki
+            
+            // 3. Zapisz do bazy
+            _documentService.Add(dokument);
+            
+            // 4. Dodaj do kolekcji (UI się automatycznie odświeży)
+            Dokumenty.Add(dokument);
+            UpdateFilteredDokumenty();
+            
+            // 5. Pokaż potwierdzenie
+            System.Windows.MessageBox.Show(
+                $"Dokument został dodany!\n\nPlik skopiowany do:\n{copiedFilePath}",
+                "Sukces",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information
+            );
         }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show(
+                $"Błąd: {ex.Message}",
+                "Błąd",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error
+            );
+        }
+    }
+}
 
         private void ExecuteEdit(object? obj)
         {
