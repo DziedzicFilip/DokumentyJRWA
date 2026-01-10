@@ -16,7 +16,8 @@ namespace DokumentyJRWA.ViewModels
         public readonly DocumentService _documentService = new();
 
         public ObservableCollection<Dokument> Dokumenty { get;}
-        
+        private readonly Services.IDialogService _dialogService = new Services.DialogService();
+
         // Commands
         public ICommand AddFileCommand { get; }
         public ICommand ExportImportArchitectureCommand { get; }
@@ -31,11 +32,16 @@ namespace DokumentyJRWA.ViewModels
             ExportImportArchitectureCommand = new RelayCommand(ExecuteExportImportArchitecture);
         }
 
-        private void ExecuteAddFile(object? obj)
-        {
-            // Logic for adding a new file will go here
-            System.Windows.MessageBox.Show("Dodaj nowy plik - Functionality not implemented yet.");
-        }
+ private void ExecuteAddFile(object? obj)
+{
+    var addVm = new AddDocumentViewModel(_dialogService);
+    if (_dialogService.ShowAddDocumentDialog(addVm))
+    {
+        var dokument = addVm.ToDokument();
+        Dokumenty.Add(dokument);
+        _documentService.Add(dokument); 
+    }
+}
 
         private void ExecuteExportImportArchitecture(object? obj)
         {
