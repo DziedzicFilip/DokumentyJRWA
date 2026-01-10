@@ -12,7 +12,7 @@ namespace DokumentyJRWA.Data
         public string Tytul { get; set; }
         public DateTime DataWplywu { get; set; }
         public string JrwaCode { get; set; }
-        public string Podmioty { get; set; }
+        public string? Podmioty { get; set; }
         public string FilePath { get; set; }
     }
 }
