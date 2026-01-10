@@ -6,5 +6,6 @@ namespace DokumentyJRWA.Services
     {
         string? OpenFileDialog();
         bool ShowAddDocumentDialog(AddDocumentViewModel vm);
+        bool ShowEditDocumentDialog(EditDocumentViewModel vm);
     }
 }

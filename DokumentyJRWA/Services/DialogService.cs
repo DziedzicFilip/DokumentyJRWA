@@ -19,5 +19,11 @@ namespace DokumentyJRWA.Services
             var window = new AddDocumentWindow { DataContext = vm };
             return window.ShowDialog() == true;
         }
+
+        public bool ShowEditDocumentDialog(EditDocumentViewModel vm)
+        {
+            var window = new EditDocumentWindow { DataContext = vm };
+            return window.ShowDialog() == true;
+        }
     }
 }

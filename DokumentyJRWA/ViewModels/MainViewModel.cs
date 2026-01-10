@@ -146,8 +146,43 @@ namespace DokumentyJRWA.ViewModels
         {
             if (obj is Dokument dokument)
             {
-                // TODO: Implementacja edycji
-                System.Windows.MessageBox.Show($"Edycja dokumentu: {dokument.Tytul}");
+                try
+                {
+                    var editVm = new EditDocumentViewModel(dokument, _dialogService);
+                    if (_dialogService.ShowEditDocumentDialog(editVm))
+                    {
+                        // Pobierz zaktualizowany dokument
+                        var updatedDokument = editVm.GetUpdatedDokument();
+                        
+                        // Zaktualizuj w bazie
+                        _documentService.Update(updatedDokument);
+                        
+                        // Odśwież kolekcję (usuń stary, dodaj nowy)
+                        var index = Dokumenty.IndexOf(dokument);
+                        if (index >= 0)
+                        {
+                            Dokumenty[index] = updatedDokument;
+                        }
+                        
+                        UpdateFilteredDokumenty();
+                        
+                        System.Windows.MessageBox.Show(
+                            "Dokument został zaktualizowany!",
+                            "Sukces",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Information
+                        );
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(
+                        $"Błąd edycji: {ex.Message}",
+                        "Błąd",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Error
+                    );
+                }
             }
         }
 
@@ -164,11 +199,37 @@ namespace DokumentyJRWA.ViewModels
 
                 if (result == System.Windows.MessageBoxResult.Yes)
                 {
-                    // TODO: Usuń z bazy przez DocumentService
-                    // _documentService.Delete(dokument.Id);
-                    
-                    Dokumenty.Remove(dokument);
-                    UpdateFilteredDokumenty();
+                    try
+                    {
+                        // 1. Usuń plik fizyczny z dysku
+                        if (!string.IsNullOrEmpty(dokument.FilePath) && System.IO.File.Exists(dokument.FilePath))
+                        {
+                            System.IO.File.Delete(dokument.FilePath);
+                        }
+                        
+                        // 2. Usuń z bazy
+                        _documentService.Delete(dokument.Id);
+                        
+                        // 3. Usuń z kolekcji
+                        Dokumenty.Remove(dokument);
+                        UpdateFilteredDokumenty();
+                        
+                        System.Windows.MessageBox.Show(
+                            "Dokument i plik zostały usunięte!",
+                            "Sukces",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Information
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show(
+                            $"Błąd usuwania: {ex.Message}",
+                            "Błąd",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Error
+                        );
+                    }
                 }
             }
         }
