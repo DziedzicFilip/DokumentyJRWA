@@ -1,0 +1,187 @@
+﻿Instrukcja krok po kroku – DokumentyJRWA (opisowa, MVVM + SQLite + CRUD)
+1️⃣ Cel i działanie aplikacji
+
+Aplikacja „DokumentyJRWA” to prosty system desktopowy do zarządzania dokumentami według Jednolitego Rzeczowego Wykazu Akt (JRWA).
+
+Jak działa aplikacja:
+
+Przechowuje dokumenty – faktury, pisma, protokoły – wraz z metadanymi (tytuł, data wpływu, podmioty, kategoria JRWA).
+
+Umożliwia klasyfikację dokumentów według JRWA – kody i nazwy kategorii przechowywane w bazie i wczytywane przy starcie.
+
+Obsługuje CRUD dokumentów:
+
+Dodawanie: wypełnienie formularza, wybór pliku, przypisanie JRWA i podmiotów.
+
+Edycja: zmiana danych lub pliku.
+
+Usuwanie: usunięcie rekordu i pliku.
+
+Odczyt / lista: wyświetlenie dokumentów w tabeli z możliwością filtrowania.
+
+Przechowuje pliki lokalnie w katalogu użytkownika (AppData\Local\DokumentyJRWA\Files) – każdy dokument ma unikalną nazwę, powiązaną z rekordem w bazie.
+
+Wyszukiwanie i filtrowanie po tytule, dacie wpływu, podmiotach lub kategorii JRWA.
+
+Import i aktualizacja kategorii JRWA – z pliku CSV lub JSON, możliwość odświeżenia wykazu akt przy zmianach urzędowych.
+
+Bezpieczna baza danych SQLite – lokalna, przenośna, tworzona automatycznie przy pierwszym uruchomieniu aplikacji, bez konieczności instalacji serwera.
+
+Cel biznesowy: umożliwić użytkownikom szybkie katalogowanie, wyszukiwanie i zarządzanie dokumentami w sposób zgodny ze standardem JRWA, bez konieczności korzystania z sieci lub zewnętrznych systemów.
+
+2️⃣ Struktura folderów (MVVM)
+
+Utwórz w projekcie następujące foldery:
+
+Models – klasy reprezentujące dane aplikacji (dokumenty, kategorie JRWA, podmioty).
+
+ViewModels – logika dla widoków (pośrednictwo między UI a danymi).
+
+Views – okna i kontrolki (formularze, listy dokumentów).
+
+Services – logika dostępu do danych i plików (CRUD, odczyt JRWA).
+
+Data – konfiguracja bazy danych (DbContext, SQLite).
+
+Files – folder do przechowywania fizycznych plików dokumentów (kopiowane z dysku użytkownika).
+
+Cel: zachowanie porządku i separacja warstw zgodnie z MVVM.
+
+3️⃣ Modele danych (Models)
+
+Aplikacja potrzebuje co najmniej dwóch modeli:
+
+Dokument – zawiera:
+
+unikalny identyfikator, tytuł, datę wpływu, kategorię JRWA, podmioty, ścieżkę do pliku.
+
+JrwaCategory – reprezentuje kategorię JRWA:
+
+kod, nazwa, kod nadrzędny (do hierarchii).
+
+Cel: modelowanie danych w bazie SQLite i powiązań w aplikacji.
+
+4️⃣ Baza danych (Data)
+
+AppDbContext – jedna klasa, która zarządza SQLite.
+
+Zawiera tabele (DbSet): Dokumenty i JrwaCategories.
+
+Plik bazy danych (SQLite) znajduje się w katalogu użytkownika, np.:
+C:\Users\<Użytkownik>\AppData\Local\DokumentyJRWA\dokumenty.db
+
+DbContext tworzony jest krótko żyjący, dla każdej operacji (CRUD).
+
+Cel: przechowywanie danych aplikacji w lokalnej, przenośnej bazie SQLite bez konieczności instalowania czegokolwiek u użytkownika.
+
+5️⃣ Serwisy (Services)
+
+DocumentService – CRUD dla dokumentów: dodawanie, edycja, usuwanie, pobieranie listy dokumentów.
+
+JrwaService – obsługa kategorii JRWA:
+
+pobieranie wszystkich kategorii,
+
+import z pliku CSV (opcjonalnie aktualizacja struktur).
+
+Cel: oddzielenie logiki dostępu do danych od widoków i ViewModeli.
+
+6️⃣ Logika widoków (ViewModels)
+
+MainViewModel – logika dla listy dokumentów:
+
+pobieranie dokumentów z DocumentService,
+
+udostępnianie ich do DataGrid w UI,
+
+opcjonalnie filtrowanie i wyszukiwanie.
+
+AddEditDocumentViewModel – logika formularza dodawania/edycji dokumentu:
+
+powiązanie z JRWA, podmiotami, datą i tytułem,
+
+obsługa przycisków „Zapisz” i „Anuluj”.
+
+Cel: separacja UI od logiki biznesowej, zgodnie z MVVM.
+
+7️⃣ Widoki (Views)
+
+MainWindow – główny widok z listą dokumentów w tabeli, przyciskami:
+
+Dodaj dokument
+
+Edytuj dokument
+
+Usuń dokument
+
+Otwórz dokument
+
+AddEditDocumentWindow – formularz do dodawania/edycji dokumentu:
+
+pola: tytuł, data wpływu, wybór kategorii JRWA, podmioty, wybór pliku, przyciski zapis/anuluj.
+
+Cel: przejrzysty i prosty interfejs użytkownika.
+
+8️⃣ Folder Files – przechowywanie dokumentów
+
+Fizyczne pliki dokumentów są kopiowane do folderu:
+AppData\Local\DokumentyJRWA\Files.
+
+Plik jest powiązany z rekordem w bazie (ścieżka zapisana w kolumnie FilePath).
+
+Dzięki temu każdy dokument ma unikalny plik i jest dostępny lokalnie.
+
+9️⃣ Struktura JRWA
+
+JRWA jest wczytywana przy starcie aplikacji z pliku wzorcowego (CSV lub JSON).
+
+Kategorie są statyczne w bazie, ale można je aktualizować poprzez import nowego pliku.
+
+Każdy dokument ma przypisaną kategorię JRWA (ComboBox lub TreeView w UI).
+
+Cel: umożliwienie klasyfikacji dokumentów według standardowego wykazu akt.
+
+🔟 Flow działania aplikacji
+
+Aplikacja startuje → baza danych tworzona automatycznie (jeśli brak).
+
+Kategorie JRWA wczytywane przy pierwszym uruchomieniu (jeśli pusta tabela).
+
+MainWindow wyświetla listę dokumentów.
+
+Użytkownik może:
+
+dodać dokument
+
+edytować dokument
+
+usunąć dokument
+
+filtrować i wyszukiwać dokumenty
+
+Operacje CRUD wykonuje Service, ViewModel obsługuje logikę UI.
+
+Pliki dokumentów przechowywane są lokalnie w katalogu Files.
+
+1️⃣1️⃣ Struktura projektu (opisowo)
+📦 DokumentyJRWA
+ ┣ Models        → Dokument, JrwaCategory
+ ┣ ViewModels    → MainViewModel, AddEditDocumentViewModel
+ ┣ Views         → MainWindow, AddEditDocumentWindow
+ ┣ Services      → DocumentService, JrwaService
+ ┣ Data          → AppDbContext
+ ┣ Files         → przechowywane pliki dokumentów (AppData)
+ ┣ App.xaml      → deklaracja aplikacji
+ ┣ App.xaml.cs   → inicjalizacja bazy, wczytanie JRWA
+
+1️⃣2️⃣ Ważne zasady
+
+DbContext – jeden typ klasy, wiele krótkotrwałych instancji.
+
+MVVM – ViewModel nie zna bezpośrednio DbContext.
+
+JRWA – załadowana z pliku, statyczna, możliwa aktualizacja.
+
+Pliki dokumentów – przechowywane lokalnie w AppData, powiązane z rekordem.
+
+SQLite – lokalna baza, automatyczne tworzenie, brak konieczności instalacji.
