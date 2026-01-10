@@ -24,7 +24,12 @@
         <DatePicker Grid.Row="3" Margin="0,5" SelectedDate="{Binding DataWplywu, Mode=TwoWay}" />
 
         <TextBlock Text="JRWA CODE" Grid.Row="4" Margin="0,5"/>
-        <TextBox Grid.Row="5" Margin="0,5" Text="{Binding JrwaCode, UpdateSourceTrigger=PropertyChanged}" />
+<ComboBox Grid.Row="5" 
+          Margin="0,5" 
+          ItemsSource="{Binding AvailableJrwaCodes}"
+          Text="{Binding JrwaCode, UpdateSourceTrigger=PropertyChanged}"
+          IsEditable="True"
+          ToolTip="Wybierz z listy lub wpisz kod JRWA ręcznie"/>
 
         <TextBlock Text="Podmioty" Grid.Row="6" Margin="0,5"/>
         <TextBox Grid.Row="7" Margin="0,5" Text="{Binding Podmioty, UpdateSourceTrigger=PropertyChanged}" />

@@ -85,5 +85,104 @@ namespace DokumentyJRWA.Services
 
             return sanitized;
         }
+// Pobierz wszystkie kody JRWA z pliku (dla dropdowna)
+public List<string> GetAllJrwaCodes(string jrwaFilePath)
+{
+    var codes = new List<string>();
+    
+    if (!File.Exists(jrwaFilePath))
+    {
+        return codes; // Pusty jeśli plik nie istnieje
+    }
+
+    try
+    {
+        string json = File.ReadAllText(jrwaFilePath);
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+        
+        JrwaStructure? structure = JsonSerializer.Deserialize<JrwaStructure>(json, options);
+
+        if (structure?.Categories != null)
+        {
+            foreach (var category in structure.Categories)
+            {
+                ExtractCodes(category, codes);
+            }
+        }
+    }
+    catch
+    {
+        // Ignoruj błędy
+    }
+
+    return codes;
+}
+
+// Pomocnicza metoda rekurencyjna do wyciągania kodów
+private void ExtractCodes(JrwaCategory category, List<string> codes)
+{
+    codes.Add($"{category.Code} - {category.Name}");
+    
+    if (category.Subcategories != null)
+    {
+        foreach (var sub in category.Subcategories)
+        {
+            ExtractCodes(sub, codes);
+        }
+    }
+}
+
+// Znajdź ścieżkę do folderu na podstawie kodu JRWA
+public string GetFolderPathByCode(string mainFolderPath, string jrwaCode)
+{
+    if (string.IsNullOrWhiteSpace(mainFolderPath) || string.IsNullOrWhiteSpace(jrwaCode))
+    {
+        return mainFolderPath;
+    }
+
+    // Usuń opis z kodu jeśli użytkownik wybrał z dropdowna (np. "100-1 - Nazwa" → "100-1")
+    string codeOnly = jrwaCode.Split('-')[0].Trim();
+    if (jrwaCode.Contains(" - "))
+    {
+        codeOnly = jrwaCode.Substring(0, jrwaCode.IndexOf(" - "));
+    }
+
+    // Szukaj folderu pasującego do kodu
+    return FindFolderByCode(mainFolderPath, codeOnly);
+}
+
+private string FindFolderByCode(string parentPath, string code)
+{
+    if (!Directory.Exists(parentPath))
+    {
+        return parentPath;
+    }
+
+    // Szukaj w bieżącym folderze
+    foreach (var dir in Directory.GetDirectories(parentPath))
+    {
+        string folderName = Path.GetFileName(dir);
+        
+        // Sprawdź czy folder zaczyna się od kodu (np. "100-1 - Nazwa")
+        if (folderName.StartsWith(code + " -") || folderName == code)
+        {
+            return dir;
+        }
+
+        // Szukaj rekurencyjnie w podfolderach
+        string found = FindFolderByCode(dir, code);
+        if (found != dir)
+        {
+            return found;
+        }
+    }
+
+    return parentPath; // Nie znaleziono - zwróć parent
+}
+
+        
     }
 }
