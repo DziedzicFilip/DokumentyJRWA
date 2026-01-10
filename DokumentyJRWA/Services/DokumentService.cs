@@ -23,5 +23,24 @@ namespace DokumentyJRWA.Services
             db.Dokumenty.Add(dokument);
             db.SaveChanges();
         }
+
+        public void Delete(Guid id)
+        {
+            using var db = new AppDbContext();
+            var dokument = db.Dokumenty.Find(id);
+            if (dokument != null)
+            {
+                db.Dokumenty.Remove(dokument);
+                db.SaveChanges();
+            }
+        }
+
+        public void Update(Dokument dokument)
+        {
+            using var db = new AppDbContext();
+            db.Dokumenty.Update(dokument);
+            db.SaveChanges();
+        }
+        
     }
 }
