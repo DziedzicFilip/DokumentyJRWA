@@ -4,32 +4,91 @@
                       xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
                       Title="Dokumenty JRWA" Height="450" Width="800">
 
+    <Controls:MetroWindow.Resources>
+        <StreamGeometry x:Key="Icon.Plus">M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z</StreamGeometry>
+        <StreamGeometry x:Key="Icon.Folder">M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z</StreamGeometry>
+    </Controls:MetroWindow.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
-            <!-- Menu -->
             <ColumnDefinition Width="*"/>
-            <!-- Główna zawartość -->
         </Grid.ColumnDefinitions>
 
-        <!-- Boczne menu -->
-        <Controls:HamburgerMenu Grid.Column="0"
-                                PaneBackground="LightGray"
-                                DisplayMode="CompactInline">
-            <Controls:HamburgerMenu.ItemsSource>
-                <Controls:HamburgerMenuItemCollection>
-                    <Controls:HamburgerMenuIconItem Icon="{DynamicResource MahApps.Icons.Plus}" Label="Dodaj dokument"/>
-                    <Controls:HamburgerMenuIconItem Icon="{DynamicResource MahApps.Icons.FolderOpen}" Label="Architektura JRWA"/>
-                </Controls:HamburgerMenuItemCollection>
-            </Controls:HamburgerMenu.ItemsSource>
+        <!-- Left Sidebar -->
+        <Border Grid.Column="0" Background="#f0f0f0" BorderBrush="#cccccc" BorderThickness="0,0,1,0">
+            <Grid Margin="15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Logo -->
+                    <RowDefinition Height="40"/>   <!-- Spacer -->
+                    <RowDefinition Height="Auto"/> <!-- Add File -->
+                    <RowDefinition Height="20"/>   <!-- Spacer -->
+                    <RowDefinition Height="Auto"/> <!-- Export/Import -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-            <!-- Content menu musi być zdefiniowane -->
-            <Controls:HamburgerMenu.Content>
-                <TextBlock Text="Wybierz opcję z menu" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            </Controls:HamburgerMenu.Content>
-        </Controls:HamburgerMenu>
+                <!-- Logo Placeholder -->
+                <Border Grid.Row="0" Height="60" Width="170" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Background="White" HorizontalAlignment="Left">
+                    <TextBlock Text="LOGO" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Gray" FontWeight="Bold"/>
+                </Border>
 
-        <!-- Główna część z filtrem i listą dokumentów -->
+                <!-- Add File Section -->
+                <Grid Grid.Row="2" Margin="0,5,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/> <!-- Button -->
+                        <ColumnDefinition Width="*"/>    <!-- Text -->
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button Grid.Column="0"
+                            Command="{Binding AddFileCommand}" 
+                            Height="40" 
+                            Width="40" 
+                            HorizontalAlignment="Left"
+                            ToolTip="Dodaj nowy plik"
+                            Style="{DynamicResource MahApps.Styles.Button.Circle}">
+                        <Path Data="{StaticResource Icon.Plus}" Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" Stretch="Uniform" Width="16" Height="16"/>
+                    </Button>
+                    
+                    <TextBlock Grid.Column="1" 
+                               Text="Dodaj nowy plik" 
+                               FontWeight="SemiBold" 
+                               Foreground="#333" 
+                               FontSize="14" 
+                               VerticalAlignment="Center" 
+                               Margin="10,0,0,0"
+                               TextWrapping="Wrap"/>
+                </Grid>
+
+                <!-- Export/Import Section -->
+                <Grid Grid.Row="4" Margin="0,5,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/> <!-- Button -->
+                        <ColumnDefinition Width="*"/>    <!-- Text -->
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0"
+                            Command="{Binding ExportImportArchitectureCommand}" 
+                            Height="40" 
+                            Width="40" 
+                            HorizontalAlignment="Left"
+                            ToolTip="Export/Import Architektury JWRA"
+                            Style="{DynamicResource MahApps.Styles.Button.Circle}">
+                        <Path Data="{StaticResource Icon.Folder}" Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" Stretch="Uniform" Width="16" Height="16"/>
+                    </Button>
+                    
+                    <TextBlock Grid.Column="1" 
+                               Text="Export/Import Architektury JWRA" 
+                               FontWeight="SemiBold" 
+                               Foreground="#333" 
+                               FontSize="14" 
+                               VerticalAlignment="Center" 
+                               Margin="10,0,0,0" 
+                               TextWrapping="Wrap"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
         <Grid Grid.Column="1" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
