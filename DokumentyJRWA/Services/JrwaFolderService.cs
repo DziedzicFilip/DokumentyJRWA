@@ -183,6 +183,118 @@ private string FindFolderByCode(string parentPath, string code)
     return parentPath; // Nie znaleziono - zwróć parent
 }
 
+// ===== EDIT MODE METHODS =====
+
+// Załaduj strukturę z istniejących folderów na dysku
+public JrwaStructure LoadStructureFromFolder(string mainFolderPath)
+{
+    if (!Directory.Exists(mainFolderPath))
+    {
+        throw new DirectoryNotFoundException($"Folder nie istnieje: {mainFolderPath}");
+    }
+
+    var structure = new JrwaStructure
+    {
+        Version = "1.0",
+        Name = "Załadowano z folderu",
+        LastModified = DateTime.Now.ToString("yyyy-MM-dd"),
+        Categories = new()
+    };
+
+    var directories = Directory.GetDirectories(mainFolderPath);
+    foreach (var dir in directories)
+    {
+        var category = LoadCategoryFromFolder(dir);
+        structure.Categories.Add(category);
+    }
+
+    return structure;
+}
+
+// Rekurencyjnie załaduj kategorię z folderu
+private JrwaCategory LoadCategoryFromFolder(string folderPath)
+{
+    string folderName = Path.GetFileName(folderPath);
+    var parts = folderName.Split(new[] { " - " }, 2, StringSplitOptions.None);
+
+    var category = new JrwaCategory
+    {
+        Code = parts.Length > 0 ? parts[0].Trim() : folderName,
+        Name = parts.Length > 1 ? parts[1].Trim() : folderName,
+        RetentionPeriod = "???", // Nie znamy z samego folderu
+        Subcategories = new()
+    };
+
+    // Rekurencyjnie załaduj podkategorie
+    if (Directory.Exists(folderPath))
+    {
+        var subdirs = Directory.GetDirectories(folderPath);
+        foreach (var subdir in subdirs)
+        {
+            category.Subcategories.Add(LoadCategoryFromFolder(subdir));
+        }
+    }
+
+    return category;
+}
+
+// Sprawdź czy folder (i podfoldery) zawierają pliki
+public bool HasFilesInFolder(string mainFolderPath, string code)
+{
+    try
+    {
+        string folderPath = GetFolderPathByCode(mainFolderPath, code);
+        if (Directory.Exists(folderPath))
+        {
+            // Szukaj plików w tym folderze i wszystkich podfolderach
+            return Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories).Length > 0;
+        }
+        return false;
+    }
+    catch
+    {
+        return false;
+    }
+}
+
+// Usuń folder fizyczny z dysku (tylko jeśli pusty lub force=true)
+public void DeleteFolder(string mainFolderPath, string code, bool force = false)
+{
+    string folderPath = GetFolderPathByCode(mainFolderPath, code);
+    
+    if (!Directory.Exists(folderPath))
+    {
+        return; // Folder nie istnieje
+    }
+
+    if (!force && HasFilesInFolder(mainFolderPath, code))
+    {
+        throw new InvalidOperationException("Folder zawiera pliki! Użyj force=true aby usunąć mimo to.");
+    }
+
+    Directory.Delete(folderPath, true); // true = usuń rekurencyjnie
+}
+
+// Zmień nazwę folderu na dysku
+public void RenameFolder(string mainFolderPath, JrwaCategory category, string newCode, string newName)
+{
+    string oldPath = GetFolderPathByCode(mainFolderPath, category.Code);
+    
+    if (!Directory.Exists(oldPath))
+    {
+        return; // Folder nie istnieje
+    }
+
+    string parentPath = Path.GetDirectoryName(oldPath) ?? mainFolderPath;
+    string newFolderName = $"{newCode} - {SanitizeFolderName(newName)}";
+    string newPath = Path.Combine(parentPath, newFolderName);
+
+    if (oldPath != newPath && !Directory.Exists(newPath))
+    {
+        Directory.Move(oldPath, newPath);
+    }
+}
+
         
     }
 }

@@ -62,6 +62,7 @@ namespace DokumentyJRWA.ViewModels
         public ICommand EditCommand { get; }
         public ICommand DeleteCommand { get; }
         public ICommand OpenLocationCommand { get; }
+        public ICommand CreateJrwaCommand { get; }
         public MainViewModel()
         {
             // Załaduj dokumenty z bazy
@@ -77,7 +78,8 @@ namespace DokumentyJRWA.ViewModels
             ExportImportArchitectureCommand = new RelayCommand(ExecuteExportImportArchitecture);
             EditCommand = new RelayCommand(ExecuteEdit);
             DeleteCommand = new RelayCommand(ExecuteDelete);
-            OpenLocationCommand = new RelayCommand(ExecuteOpenLocation);  
+            OpenLocationCommand = new RelayCommand(ExecuteOpenLocation);
+            CreateJrwaCommand = new RelayCommand(ExecuteCreateJrwa);  
         }
 
         // Metoda filtrująca dokumenty
@@ -239,6 +241,13 @@ namespace DokumentyJRWA.ViewModels
              var settingsWindow = new Views.SettingsWindow();
     settingsWindow.Owner = System.Windows.Application.Current.MainWindow;
     settingsWindow.ShowDialog();
+        }
+
+        private void ExecuteCreateJrwa(object? obj)
+        {
+            var builderWindow = new Views.JrwaBuilderWindow();
+            builderWindow.Owner = System.Windows.Application.Current.MainWindow;
+            builderWindow.ShowDialog();
         }
 
         // INotifyPropertyChanged implementation
