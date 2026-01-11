@@ -82,16 +82,9 @@ namespace DokumentyJRWA.Services
                     throw new FileNotFoundException("Wybrany plik nie istnieje.");
                 }
 
-                
-                string appJrwaPath = Path.Combine(
-                    AppDomain.CurrentDomain.BaseDirectory, 
-                    "jrwa_structure.json"
-                );
-
-                File.Copy(sourcePath, appJrwaPath, overwrite: true);
-                
-              
-                settings.JrwaFilePath = appJrwaPath;
+                // Zapisz dokładną ścieżkę podaną przez użytkownika
+                // NIE kopiuj pliku do katalogu aplikacji
+                settings.JrwaFilePath = sourcePath;
                 SaveSettings(settings);
             }
             catch (Exception ex)

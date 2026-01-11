@@ -61,7 +61,9 @@ namespace DokumentyJRWA.ViewModels
         public ICommand ExportImportArchitectureCommand { get; }
         public ICommand EditCommand { get; }
         public ICommand DeleteCommand { get; }
-
+        public ICommand OpenLocationCommand { get; }
+        public ICommand CreateJrwaCommand { get; }
+        public ICommand RefreshCommand { get; }
         public MainViewModel()
         {
             // Załaduj dokumenty z bazy
@@ -77,6 +79,9 @@ namespace DokumentyJRWA.ViewModels
             ExportImportArchitectureCommand = new RelayCommand(ExecuteExportImportArchitecture);
             EditCommand = new RelayCommand(ExecuteEdit);
             DeleteCommand = new RelayCommand(ExecuteDelete);
+            OpenLocationCommand = new RelayCommand(ExecuteOpenLocation);
+            CreateJrwaCommand = new RelayCommand(ExecuteCreateJrwa);
+            RefreshCommand = new RelayCommand(ExecuteRefresh);  
         }
 
         // Metoda filtrująca dokumenty
@@ -145,8 +150,43 @@ namespace DokumentyJRWA.ViewModels
         {
             if (obj is Dokument dokument)
             {
-                // TODO: Implementacja edycji
-                System.Windows.MessageBox.Show($"Edycja dokumentu: {dokument.Tytul}");
+                try
+                {
+                    var editVm = new EditDocumentViewModel(dokument, _dialogService);
+                    if (_dialogService.ShowEditDocumentDialog(editVm))
+                    {
+                        // Pobierz zaktualizowany dokument
+                        var updatedDokument = editVm.GetUpdatedDokument();
+                        
+                        // Zaktualizuj w bazie
+                        _documentService.Update(updatedDokument);
+                        
+                        // Odśwież kolekcję (usuń stary, dodaj nowy)
+                        var index = Dokumenty.IndexOf(dokument);
+                        if (index >= 0)
+                        {
+                            Dokumenty[index] = updatedDokument;
+                        }
+                        
+                        UpdateFilteredDokumenty();
+                        
+                        System.Windows.MessageBox.Show(
+                            "Dokument został zaktualizowany!",
+                            "Sukces",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Information
+                        );
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(
+                        $"Błąd edycji: {ex.Message}",
+                        "Błąd",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Error
+                    );
+                }
             }
         }
 
@@ -163,11 +203,37 @@ namespace DokumentyJRWA.ViewModels
 
                 if (result == System.Windows.MessageBoxResult.Yes)
                 {
-                    // TODO: Usuń z bazy przez DocumentService
-                    // _documentService.Delete(dokument.Id);
-                    
-                    Dokumenty.Remove(dokument);
-                    UpdateFilteredDokumenty();
+                    try
+                    {
+                        // 1. Usuń plik fizyczny z dysku
+                        if (!string.IsNullOrEmpty(dokument.FilePath) && System.IO.File.Exists(dokument.FilePath))
+                        {
+                            System.IO.File.Delete(dokument.FilePath);
+                        }
+                        
+                        // 2. Usuń z bazy
+                        _documentService.Delete(dokument.Id);
+                        
+                        // 3. Usuń z kolekcji
+                        Dokumenty.Remove(dokument);
+                        UpdateFilteredDokumenty();
+                        
+                        System.Windows.MessageBox.Show(
+                            "Dokument i plik zostały usunięte!",
+                            "Sukces",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Information
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show(
+                            $"Błąd usuwania: {ex.Message}",
+                            "Błąd",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Error
+                        );
+                    }
                 }
             }
         }
@@ -179,6 +245,43 @@ namespace DokumentyJRWA.ViewModels
     settingsWindow.ShowDialog();
         }
 
+        private void ExecuteCreateJrwa(object? obj)
+        {
+            var builderWindow = new Views.JrwaBuilderWindow();
+            builderWindow.Owner = System.Windows.Application.Current.MainWindow;
+            builderWindow.ShowDialog();
+        }
+
+        private void ExecuteRefresh(object? obj)
+        {
+            try
+            {
+                // Załaduj dokumenty z bazy ponownie
+                Dokumenty = new ObservableCollection<Dokument>(
+                    _documentService.GetAll()
+                );
+                
+                // Odśwież przefiltrowaną listę
+                UpdateFilteredDokumenty();
+                
+                System.Windows.MessageBox.Show(
+                    "Lista dokumentów została odświeżona!",
+                    "Odświeżono",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Błąd odświeżania: {ex.Message}",
+                    "Błąd",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error
+                );
+            }
+        }
+
         // INotifyPropertyChanged implementation
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -186,5 +289,38 @@ namespace DokumentyJRWA.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+        private void ExecuteOpenLocation(object? obj)
+{
+    if (obj is Dokument dokument)
+    {
+        try
+        {
+            // Sprawdź czy plik istnieje
+            if (string.IsNullOrEmpty(dokument.FilePath) || !System.IO.File.Exists(dokument.FilePath))
+            {
+                System.Windows.MessageBox.Show(
+                    $"Plik nie istnieje:\n{dokument.FilePath}",
+                    "Błąd",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            // Otwórz folder i zaznacz plik
+            string argument = $"/select, \"{dokument.FilePath}\"";
+            System.Diagnostics.Process.Start("explorer.exe", argument);
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show(
+                $"Błąd otwierania lokalizacji:\n{ex.Message}",
+                "Błąd",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error
+            );
+        }
+    }
+}
     }
 }

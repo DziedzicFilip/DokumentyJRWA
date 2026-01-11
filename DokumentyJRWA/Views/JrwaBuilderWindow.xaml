@@ -1,0 +1,141 @@
+<Controls:MetroWindow x:Class="DokumentyJRWA.Views.JrwaBuilderWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      Title="Kreator struktury JRWA" 
+                      Height="600" 
+                      Width="800"
+                      WindowStartupLocation="CenterOwner">
+
+    <Controls:MetroWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Controls:MetroWindow.Resources>
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Lewa strona: Lista kategorii -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" 
+                       Text="Kategorie JRWA" 
+                       FontSize="16" 
+                       FontWeight="Bold" 
+                       Margin="0,0,0,10"/>
+
+            <TreeView Grid.Row="1" 
+                      ItemsSource="{Binding Categories}"
+                      SelectedItemChanged="TreeView_SelectedItemChanged">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="True"/>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding Subcategories}">
+                        <TextBlock>
+                            <Run Text="{Binding Code}"/>
+                            <Run Text=" - "/>
+                            <Run Text="{Binding Name}"/>
+                        </TextBlock>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <StackPanel Grid.Row="2">
+                <Button Content="📂 Załaduj z folderu" 
+                        Command="{Binding LoadFromFolderCommand}"
+                        Margin="0,5,0,5"
+                        ToolTip="Załaduj istniejącą strukturę z folderu głównego"/>
+                
+                <Button Content="➕ Dodaj kategorię główną" 
+                        Command="{Binding AddCategoryCommand}"
+                        Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Prawa strona: Edycja wybranej kategorii -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" 
+                       Text="Edycja kategorii" 
+                       FontSize="16" 
+                       FontWeight="Bold" 
+                       Margin="0,0,0,10"/>
+
+            <StackPanel Grid.Row="1" IsEnabled="{Binding IsItemSelected}">
+                <TextBlock Text="Kod JRWA" Margin="0,5"/>
+                <TextBox Text="{Binding SelectedCategory.Code, UpdateSourceTrigger=PropertyChanged}" 
+                         Margin="0,5"
+                         Controls:TextBoxHelper.Watermark="np. 100"/>
+
+                <TextBlock Text="Nazwa kategorii" Margin="0,15,0,5"/>
+                <TextBox Text="{Binding SelectedCategory.Name, UpdateSourceTrigger=PropertyChanged}" 
+                         Margin="0,5"
+                         Controls:TextBoxHelper.Watermark="np. Organizacja i zarządzanie"/>
+
+               <!--- <TextBlock Text="Okres archiwizacji" Margin="0,15,0,5"/>
+                <TextBox Text="{Binding SelectedCategory.RetentionPeriod, UpdateSourceTrigger=PropertyChanged}" 
+                         Margin="0,5"
+                         Controls:TextBoxHelper.Watermark="np. 10 lat, Bezterminowo"/>  -->
+
+                <!-- Przyciski akcji -->
+                <StackPanel Orientation="Horizontal" Margin="0,30,0,0" HorizontalAlignment="Center">
+                    <Button Content="➕ Podkategoria" 
+                            Command="{Binding AddSubcategoryCommand}"
+                            Width="130"
+                            Margin="0,0,10,0"
+                            ToolTip="Dodaj podkategorię do wybranej kategorii"/>
+                    <Button Content="🗑️ Usuń" 
+                            Command="{Binding RemoveCategoryCommand}"
+                            Width="100"
+                            ToolTip="Usuń wybraną kategorię"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- Dolny pasek: Eksport -->
+        <StackPanel Grid.Row="1" 
+                    Grid.ColumnSpan="3" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Margin="0,20,0,0">
+            <!-- Eksport (tryb tworzenia) -->
+            <Button Content="💾 Eksportuj do JSON" 
+                    Command="{Binding ExportCommand}"
+                    MinWidth="150"
+                    Margin="0,0,10,0"
+                    Visibility="{Binding IsCreateMode, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Style="{DynamicResource MahApps.Styles.Button.Square.Accent}"/>
+            
+            <!-- Zapisz (tryb edycji) -->
+            <Button Content="💾 Zapisz zmiany" 
+                    Command="{Binding SaveChangesCommand}"
+                    MinWidth="150"
+                    Margin="0,0,10,0"
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Style="{DynamicResource MahApps.Styles.Button.Square.Accent}"/>
+            
+            <Button Content="Zamknij" 
+                    Click="Close_Click"
+                    MinWidth="100"/>
+        </StackPanel>
+    </Grid>
+</Controls:MetroWindow>
