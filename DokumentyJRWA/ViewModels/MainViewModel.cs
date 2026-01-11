@@ -63,6 +63,7 @@ namespace DokumentyJRWA.ViewModels
         public ICommand DeleteCommand { get; }
         public ICommand OpenLocationCommand { get; }
         public ICommand CreateJrwaCommand { get; }
+        public ICommand RefreshCommand { get; }
         public MainViewModel()
         {
             // Załaduj dokumenty z bazy
@@ -79,7 +80,8 @@ namespace DokumentyJRWA.ViewModels
             EditCommand = new RelayCommand(ExecuteEdit);
             DeleteCommand = new RelayCommand(ExecuteDelete);
             OpenLocationCommand = new RelayCommand(ExecuteOpenLocation);
-            CreateJrwaCommand = new RelayCommand(ExecuteCreateJrwa);  
+            CreateJrwaCommand = new RelayCommand(ExecuteCreateJrwa);
+            RefreshCommand = new RelayCommand(ExecuteRefresh);  
         }
 
         // Metoda filtrująca dokumenty
@@ -248,6 +250,36 @@ namespace DokumentyJRWA.ViewModels
             var builderWindow = new Views.JrwaBuilderWindow();
             builderWindow.Owner = System.Windows.Application.Current.MainWindow;
             builderWindow.ShowDialog();
+        }
+
+        private void ExecuteRefresh(object? obj)
+        {
+            try
+            {
+                // Załaduj dokumenty z bazy ponownie
+                Dokumenty = new ObservableCollection<Dokument>(
+                    _documentService.GetAll()
+                );
+                
+                // Odśwież przefiltrowaną listę
+                UpdateFilteredDokumenty();
+                
+                System.Windows.MessageBox.Show(
+                    "Lista dokumentów została odświeżona!",
+                    "Odświeżono",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Błąd odświeżania: {ex.Message}",
+                    "Błąd",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error
+                );
+            }
         }
 
         // INotifyPropertyChanged implementation

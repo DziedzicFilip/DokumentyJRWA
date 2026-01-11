@@ -137,6 +137,24 @@ namespace DokumentyJRWA.ViewModels
                             }
                         }
 
+                        // Usuń dokumenty z bazy danych powiązane z tym folderem
+                        var documentService = new Services.DocumentService();
+                        string folderPath = folderService.GetFolderPathByCode(
+                            settings.MainFolderPath, 
+                            SelectedCategory.Code
+                        );
+
+                        if (!string.IsNullOrEmpty(folderPath) && System.IO.Directory.Exists(folderPath))
+                        {
+                            int deletedCount = documentService.DeleteByFolderPath(folderPath);
+                            if (deletedCount > 0)
+                            {
+                                System.Diagnostics.Debug.WriteLine(
+                                    $"Usunięto {deletedCount} dokumentów z bazy dla folderu: {folderPath}"
+                                );
+                            }
+                        }
+
                         // Usuń folder fizyczny z dysku
                         folderService.DeleteFolder(settings.MainFolderPath, SelectedCategory.Code, force: true);
                     }

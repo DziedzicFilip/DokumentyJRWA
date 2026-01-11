@@ -143,11 +143,12 @@ public string GetFolderPathByCode(string mainFolderPath, string jrwaCode)
         return mainFolderPath;
     }
 
-    // Usuń opis z kodu jeśli użytkownik wybrał z dropdowna (np. "100-1 - Nazwa" → "100-1")
-    string codeOnly = jrwaCode.Split('-')[0].Trim();
+    // Usuń tylko opis z kodu jeśli zawiera " - " (np. "100-1 - Nazwa" → "100-1")
+    // NIE dziel po myślniku w kodzie JRWA (np. "100-1" ma pozostać "100-1")
+    string codeOnly = jrwaCode.Trim();
     if (jrwaCode.Contains(" - "))
     {
-        codeOnly = jrwaCode.Substring(0, jrwaCode.IndexOf(" - "));
+        codeOnly = jrwaCode.Substring(0, jrwaCode.IndexOf(" - ")).Trim();
     }
 
     // Szukaj folderu pasującego do kodu
